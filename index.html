@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKILLNEAST-PDF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* == EXISTING STYLES FROM YOUR WEBSITE (START) == */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-primary: #f5f5f5;
+            --text-secondary: #b3b3b3;
+            --border-color: #333333;
+            --accent-red: #e53935;
+            --accent-glow: rgba(229, 57, 53, 0.3);
+            --star-default: #4a4a4a;
+            --star-selected: #ffc107;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 40%);
+            z-index: -1;
+            pointer-events: none;
+            animation: pulse-glow 8s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-glow {
+            from { transform: scale(0.8); opacity: 0.5; }
+            to { transform: scale(1.2); opacity: 1; }
+        }
+        body.no-scroll { overflow: hidden; }
+        .btn-effect {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-effect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+        .shine-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 75%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-25deg);
+        }
+        .btn-effect:hover .shine-effect::before { animation: shine 0.8s; }
+        .overlay { position: fixed; inset: 0; z-index: 2000; visibility: hidden; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.3s, visibility 0.3s; padding: 1rem; }
+        .overlay.active { visibility: visible; opacity: 1; }
+        .panel { position: relative; background-color: var(--bg-secondary); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease; display: flex; flex-direction: column; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.8); opacity: 0; }
+        .overlay.active .panel { transform: scale(1); opacity: 1; }
+        .close-btn { position: absolute; top: 1rem; right: 1rem; z-index: 10; font-size: 1.5rem; cursor: pointer; color: var(--text-primary); background: none; border: none; transition: transform 0.2s, color 0.2s; }
+        .close-btn:hover { transform: scale(1.2); color: var(--accent-red); }
+        .back-btn { font-size: 1.2rem; cursor: pointer; color: var(--text-primary); background: none; border: none; padding: 0.5rem; transition: transform 0.2s; }
+        .back-btn:hover { transform: scale(1.1); }
+        .red-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 12px; background-color: var(--accent-red); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+        #splash-screen { position: fixed; inset: 0; background-color: var(--bg-primary); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; transition: opacity 0.5s ease-out; }
+        .splash-logo { display: flex; align-items: center; gap: 1rem; animation: fadeInUp 1s ease-out; }
+        .splash-logo .icon { font-size: 3rem; color: var(--accent-red); }
+        .logo-text { font-family: 'Montserrat', sans-serif; font-size: 2.5rem; font-weight: 700; }
+        .logo-text span { color: var(--accent-red); }
+        .loading-text { color: var(--text-secondary); animation: fadeInUp 1s 0.2s ease-out backwards; }
+        #name-prompt-overlay .panel { padding: 2rem; text-align: center; }
+        #name-prompt-overlay h2 { font-family: 'Montserrat', sans-serif; margin-bottom: 0.5rem; }
+        #name-prompt-overlay p { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        #name-input { width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px; border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem; }
+        #name-input:focus { outline: none; border-color: var(--accent-red); box-shadow: 0 0 15px var(--accent-glow); }
+        #name-submit-btn { width: 100%; padding: 12px; background-color: var(--accent-red); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+        #telegram-popup .panel { padding: 1.5rem; text-align: center; }
+        #popupImage { max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 1rem; }
+        #search-overlay, #notification-overlay { align-items: flex-start; padding: 0; }
+        #search-overlay .panel, #notification-overlay .panel { inset: 0; height: 100%; width: 100%; max-width: 100%; border-radius: 0; background-color: var(--bg-primary); }
+        #search-overlay .panel { transform: translateY(-100%); }
+        #search-overlay.active .panel { transform: translateY(0); }
+        #notification-overlay .panel { transform: translateX(100%); }
+        #notification-overlay.active .panel { transform: translateX(0); }
+        .search-header { display: flex; align-items: center; padding: 1rem; gap: 1rem; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary); }
+        #search-input { flex-grow: 1; height: 50px; background: transparent; border: none; color: var(--text-primary); font-size: 1.2rem; outline: none; }
+        #search-results-container { padding: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem 1rem; }
+        .panel-header { display: flex; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color); justify-content: space-between; background: var(--bg-secondary); }
+        .panel-header h2 { text-align: center; margin: 0; flex-grow: 1; font-size: 1.2rem; }
+        .panel-header .close-btn { position: static; transform: none; padding: 0.5rem; font-size: 1.5rem; }
+        .panel-header .mark-read-btn { background: none; border: none; color: var(--accent-red); cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .notification-tabs { display: flex; background: var(--bg-secondary); }
+        .notification-tab { flex: 1; text-align: center; padding: 0.8rem; cursor: pointer; color: var(--text-secondary); font-weight: 500; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; }
+        .notification-tab.active { color: var(--accent-red); border-bottom: 3px solid var(--accent-red); }
+        .notification-content { padding: 1rem; display: none; }
+        .notification-content.active { display: block; }
+        #book-detail-popup .panel { background-color: var(--bg-primary); padding: 0; overflow: hidden; }
+        .book-detail-content { padding: 1.5rem; max-height: 85vh; overflow-y: auto; }
+        .book-detail-header-img { width: 100%; height: 200px; object-fit: cover; }
+        .book-detail-main-title { font-size: 1.8rem; font-weight: 700; margin-top: 1rem; color: var(--text-primary); }
+        .book-detail-author { color: var(--text-secondary); margin-bottom: 1rem; }
+        .book-detail-meta { display: flex; align-items: center; gap: 1rem; color: var(--text-secondary); font-size: 0.9rem; flex-wrap: wrap; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 0.8rem 0; margin-bottom: 1rem; }
+        .book-detail-meta span { display: inline-flex; align-items: center; gap: 0.4rem; }
+        .book-detail-actions { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        #likeBtn { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
+        #likeBtn .fa-heart { font-size: 1rem; }
+        #likeBtn.liked { background-color: #e53935; border-color: #e53935; color: white; }
+        #likeBtn.liked .fa-heart { animation: like-pop 0.3s ease; }
+        @keyframes like-pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+        .detail-section-title { font-size: 1.2rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); margin-top: 2rem; margin-bottom: 1rem; }
+        .feedback-form textarea { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--text-primary); min-height: 80px; margin-bottom: 1rem; }
+        .comments-container { margin-top: 1rem; max-height: 300px; overflow-y: auto; }
+        .comment { border-bottom: 1px solid var(--border-color); padding: 1rem 0; }
+        .comment:last-child { border-bottom: none; }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .comment-user { color: var(--accent-red); font-weight: 600; }
+        .comment-timestamp { font-size: 0.75rem; color: var(--text-secondary); }
+        .comment-body { margin-bottom: 0.75rem; }
+        .comment-actions { display: flex; align-items: center; gap: 1rem; font-size: 0.8rem; }
+        .comment-actions button { background: none; border: none; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; padding: 0; }
+        .comment-actions button .fa-heart { transition: color 0.2s ease; }
+        .comment-actions button.liked, .comment-actions button.liked .fa-heart { color: var(--accent-red); }
+        .view-replies-btn { background: none; border: none; color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-top: 0.75rem; }
+        .comment-reply-container { padding-left: 1rem; border-left: 2px solid var(--border-color); margin-top: 0.75rem; }
+        .reply-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .reply-form textarea { flex-grow: 1; min-height: 40px; font-size: 0.9rem; }
+        .reply-form button { padding: 8px 12px; font-size: 0.9rem; }
+        .app-container { padding: 0 1rem; max-width: 1200px; margin: auto; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
+        .app-logo { font-family: 'Montserrat', sans-serif; font-size: 1.8rem; font-weight: 700; }
+        .app-logo span { color: var(--accent-red); }
+        .nav-icons { display: flex; align-items: center; gap: 1.2rem; }
+        .nav-icons .icon-btn { font-size: 1.2rem; cursor: pointer; background: none; border: none; color: var(--text-primary); transition: color 0.2s, transform 0.2s; }
+        .nav-icons .icon-btn:hover { color: var(--accent-red); transform: scale(1.1); }
+        .section-heading { font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .heading-glow-line { height: 3px; width: 50px; background-color: var(--accent-red); border-radius: 3px; }
+        .horizontal-scroll-container { display: flex; overflow-x: auto; gap: 1rem; padding-bottom: 1rem; scrollbar-width: none; margin-top: 1.5rem; }
+        .filter-btn { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 16px; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background-color: var(--accent-red); color: white; }
+        #book-grid { margin-top: 1.5rem; }
+        .book-card { cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.5s ease-out backwards; }
+        #popular-container .book-card { flex: 0 0 140px; }
+        .book-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px var(--accent-glow); }
+        .book-card-image { width: 100%; aspect-ratio: 3 / 4.5; background-color: #333; background-size: cover; background-position: center; border-radius: 12px; }
+        .book-card-title { font-weight: 500; padding-top: 0.5rem; font-size: 0.9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 140px; }
+        #book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem 1rem; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        main section { animation: fadeInUp 0.6s ease-out backwards; }
+        #popular-section { animation-delay: 0.2s; }
+        section:nth-of-type(2) { animation-delay: 0.4s; }
+        @media (max-width: 768px) { .app-logo { font-size: 1.5rem; } .section-heading { font-size: 1.3rem; } #book-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); } #popular-container .book-card { flex: 0 0 120px; } .book-card-title { max-width: 120px; } }
+        @media (max-width: 480px) { .app-container { padding: 0 0.8rem; } .app-logo { font-size: 1.3rem; } .nav-icons { gap: 1rem; } .icon-btn { font-size: 1.1rem; } .section-heading { font-size: 1.2rem; } #book-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; } #popular-container .book-card { flex: 0 0 130px; } .book-card-title { font-size: 0.85rem; max-width: 130px; } .book-detail-main-title { font-size: 1.5rem; } .filter-btn { padding: 6px 12px; font-size: 0.9rem; } .horizontal-scroll-container { gap: 0.5rem; } .panel { width: 100%; max-height: 100vh; } #name-prompt-overlay .panel { padding: 1.5rem; } .book-detail-header-img { height: 150px; } }
+        /* == EXISTING STYLES (END) == */
+
+        /* == NEW VERIFICATION UI STYLES (START) == */
+        #verification-overlay {
+            align-items: flex-start;
+            padding: 0;
+        }
+
+        #verification-overlay .panel {
+            background-color: #0d111c;
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0;
+            padding: 1.5rem;
+            overflow-y: auto;
+            /* Yahan se screen scroll hogi */
+            text-align: left;
+            transform: scale(1);
+        }
+
+        .verification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .verification-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .verification-header .logo .fa-lock {
+            color: #f0b90b;
+        }
+        .verification-header .logo span {
+            color: #00aaff;
+        }
+
+        .verification-header .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #26a69a;
+            font-weight: 600;
+        }
+        .verification-header .status .dot {
+            width: 10px;
+            height: 10px;
+            background-color: #26a69a;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(38, 166, 154, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(38, 166, 154, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(38, 166, 154, 0); }
+        }
+
+        .verification-main-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 2.5rem 0;
+            color: #fff;
+        }
+
+        .instant-access-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, #1e3a8a, #00aaff);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            width: fit-content;
+            margin: 0 auto 2.5rem auto;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 170, 255, 0.3);
+        }
+        
+        .verification-card {
+            background-color: #161b29;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #2a3042;
+        }
+        
+        .verification-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-header .icon {
+            font-size: 1.5rem;
+        }
+        .card-header .fa-rocket { color: #ff6f61; }
+        .card-header .fa-user-secret { color: #f0b90b; }
+        .card-header .fa-video { color: #ce93d8; }
+
+        .card-header .title-group {
+            flex-grow: 1;
+        }
+
+        .card-header .title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        .card-header .subtitle {
+            font-size: 0.8rem;
+            color: #8a92a5;
+        }
+
+        .card-header .fa-check-circle {
+            color: #26a69a;
+        }
+
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-left: 2.5rem;
+            font-size: 0.9rem;
+        }
+
+        .card-status .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-online .dot { background-color: #26a69a; }
+        .status-online { color: #26a69a; }
+
+        .status-testing .dot { background-color: #f0b90b; }
+        .status-testing { color: #f0b90b; }
+        
+        .help-btn {
+            background-color: #e91e63;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .info-card {
+            background-color: rgba(240, 185, 11, 0.1);
+            border: 1px solid #f0b90b;
+        }
+        .info-card .card-header .fa-question-circle {
+            color: #f0b90b;
+        }
+        .info-card-body {
+            color: #b9bec9;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            padding-left: 2.5rem;
+        }
+        .info-card-body strong {
+            color: #f0b90b;
+        }
+        
+        .verification-footer {
+            text-align: center;
+            color: #8a92a5;
+            margin-top: 3rem;
+            font-size: 0.8rem;
+        }
+        .verification-footer .footer-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .verification-footer .footer-icons span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .verification-footer .fa-shield-alt { color: #f0b90b; }
+        .verification-footer .fa-bolt { color: #00aaff; }
+        .verification-footer .fa-check-circle { color: #26a69a; }
+
+        /* == NEW VERIFICATION UI STYLES (END) == */
+    </style>
+</head>
+<body>
+    <div id="splash-screen"><div class="splash-logo"><div class="icon"><i class="fas fa-book-open"></i></div><div class="logo-text">SKILL<span>NEAST</span></div></div><p class="loading-text">Loading SKILLNEAST Library...</p></div>
+    <div id="maintenance-overlay" class="overlay"><div class="panel text-center bg-transparent border-0 shadow-none"><h1 id="maintenance-message-text"></h1></div></div>
+    <div id="app-wrapper" style="visibility: hidden;">
+        <div class="app-container">
+            <header class="top-nav"><h1 class="app-logo">SKILL<span>NEAST</span></h1><div class="nav-icons"><button class="icon-btn" id="search-icon"><i class="fas fa-search"></i></button><button class="icon-btn" id="notification-icon"><i class="fas fa-bell"></i></button></div></header>
+            <main>
+                <section id="popular-section" style="display:none;"><h2 class="section-heading">Popular Now 🔥</h2><div class="heading-glow-line"></div><div class="horizontal-scroll-container" id="popular-container"></div></section>
+                <section style="margin-top: 2rem;"><h2 class="section-heading">Discover Books</h2><div class="heading-glow-line"></div><div class="horizontal-scroll-container" id="category-filters"></div><div id="book-grid"></div></section>
+            </main>
+        </div>
+    </div>
+    <div id="name-prompt-overlay" class="overlay"><div class="panel"><h2>Welcome to SKILLNEAST!</h2><p>Please enter your name to continue.</p><input type="text" id="name-input" placeholder="Your Name..."><button id="name-submit-btn" class="btn-effect"><span class="shine-effect"></span>Enter</button></div></div>
+    <div id="telegram-popup" class="overlay"><div class="panel"><button class="close-btn"><i class="fas fa-times"></i></button><img id="popupImage" src="" alt="Popup Icon" style="display:none;"> <h2 id="popupTitle"></h2><p id="popupDescription"></p><a href="#" id="popupButton" class="red-btn btn-effect" target="_blank"><span class="shine-effect"></span></a></div></div>
+    <div id="search-overlay" class="overlay"><div class="panel"><div class="search-header"><button class="back-btn"><i class="fas fa-arrow-left"></i></button><input type="text" id="search-input" placeholder="Search books, authors..."></div><div id="search-results-container"></div></div></div>
+    <div id="notification-overlay" class="overlay"><div class="panel"><div class="panel-header"><button class="close-btn"><i class="fas fa-times"></i></button><h2>Notifications</h2><button class="mark-read-btn"><i class="fas fa-check-double"></i> Mark All Read</button></div><div class="notification-tabs"><div class="notification-tab active" data-tab="announcements">Announcements</div><div class="notification-tab" data-tab="personal">Personal</div></div><div id="announcements-content" class="notification-content active"></div><div id="personal-content" class="notification-content"></div></div></div>
+    <div id="book-detail-popup" class="overlay"><div class="panel"></div></div>
+    
+    <div id="verification-overlay" class="overlay">
+        <div class="panel">
+            <header class="verification-header">
+                 <div class="logo">
+                    <i class="fas fa-lock"></i>Secure<span>Access</span>
+                </div>
+                <div class="status">
+                    <div class="dot"></div> System Online
+                </div>
+            </header>
+
+            <main>
+                <h1 class="verification-main-title">Generate Your Access Key</h1>
+                
+                <div class="verification-card">
+                     <a href="#" id="generateKeyButton" target="_blank">
+                        <div class="card-header">
+                            <i class="fas fa-rocket icon"></i>
+                            <div class="title-group">
+                                 <div class="title">WEBSITE SERVER - 1</div>
+                            </div>
+                            <i class="fas fa-check-circle"></i>
+                         </div>
+                        <div class="card-status status-online">
+                            <div class="dot"></div> Online
+                        </div>
+                     </a>
+                </div>
+
+                <div class="verification-card">
+                     <div class="card-header">
+                        <i class="fas fa-user-secret icon"></i>
+                         <div class="title-group">
+                            <div class="title">SERVER - 2 (Beta)</div>
+                            <div class="subtitle">On Testing (Admin)</div>
+                         </div>
+                    </div>
+                    <div class="card-status status-testing">
+                        <div class="dot"></div> Testing
+                    </div>
+                 </div>
+
+                <div class="verification-card" id="videoTutorialCard">
+                    <div class="card-header">
+                        <i class="fas fa-video icon"></i>
+                        <div class="title-group">
+                            <div class="title">TUTORIAL VIDEO</div>
+                            <div class="subtitle">Step-by-step guide</div>
+                        </div>
+                         <button class="help-btn">HELP</button>
+                    </div>
+                </div>
+                
+                <div class="video-container" id="videoContainer" style="display:none; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 8px; margin-bottom: 1.5rem;"></div>
+
+                <div class="verification-card info-card">
+                    <div class="card-header">
+                        <i class="fas fa-question-circle icon"></i>
+                        <div class="title-group">
+                             <div class="title">Need Help?</div>
+                        </div>
+                    </div>
+                    <div class="info-card-body">
+                        Watch the <strong>tutorial video</strong> if you're unsure how to proceed. It covers the entire verification process step by step.
+                    </div>
+                </div>
+
+            </main>
+
+            <footer class="verification-footer">
+                 <p>© 2025 Shashank and Neotrms.com. All rights reserved.</p>
+                <div class="footer-icons">
+                    <span><i class="fas fa-shield-alt"></i> Secure</span>
+                    <span><i class="fas fa-bolt"></i> Fast</span>
+                    <span><i class="fas fa-check-circle"></i> Protected</span>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, onValue, update, push, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("SKILLNEAST App Initializing...");
+
+            const firebaseConfig = {
+              apiKey: "AIzaSyChwpbFb6M4HtG6zwjg0AXh7Lz9KjnrGZk",
+              authDomain: "adminneast.firebaseapp.com",
+              databaseURL: "https://adminneast-default-rtdb.firebaseio.com",
+              projectId: "adminneast",
+              storageBucket: "adminneast.appspot.com",
+              messagingSenderId: "883877553418",
+              appId: "1:883877553418:web:84ce8200f4b471bfffc6f3"
+            };
+            const app = initializeApp(firebaseConfig);
+            const db = getDatabase(app);
+
+            let allBooksCache = [];
+            const configRef = ref(db, 'skillneast/config');
+            const categoriesRef = ref(db, 'skillneast/categories');
+            
+            let earningConfig = {
+                shortenerUrl: '#',
+                youtubeVideoId: 'sO8eGL6SFsA', 
+                accessDurationHours: 12
+            };
+
+            const overlays = {
+                namePrompt: document.getElementById('name-prompt-overlay'),
+                telegram: document.getElementById('telegram-popup'),
+                search: document.getElementById('search-overlay'),
+                notifications: document.getElementById('notification-overlay'),
+                bookDetail: document.getElementById('book-detail-popup'),
+                verification: document.getElementById('verification-overlay')
+            };
+
+            function setCookie(name, value, hours) { let expires = ""; if (hours) { const date = new Date(); date.setTime(date.getTime() + (hours * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/"; }
+            function getCookie(name) { const nameEQ = name + "="; const ca = document.cookie.split(';'); for(let i = 0; i < ca.length; i++) { let c = ca[i]; while (c.charAt(0) == ' ') c = c.substring(1, c.length); if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length); } return null; }
+
+            const openOverlay = (name) => { 
+                overlays[name]?.classList.add('active');
+                if (name !== 'verification') {
+                    document.body.classList.add('no-scroll');
+                }
+            };
+            const closeOverlay = (name) => { 
+                const overlay = overlays[name];
+                if (overlay) { 
+                    overlay.classList.remove('active');
+                    const activeOverlays = document.querySelectorAll('.overlay.active').length; 
+                    if (activeOverlays === 0) { 
+                        document.body.classList.remove('no-scroll');
+                    } 
+                } 
+            };
+
+            function startApp() {
+                console.log("Starting app and fetching config...");
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('verified') === 'true') {
+                    setCookie('accessGranted', 'true', earningConfig.accessDurationHours);
+                    window.history.replaceState(null, '', window.location.pathname);
+                    alert('Verification Successful! You can now download books.');
+                }
+                
+                onValue(configRef, (snapshot) => {
+                    const config = snapshot.val();
+                    console.log("Firebase Config Loaded:", config);
+
+                    if (!config) {
+                        console.error("IMPORTANT: 'skillneast/config' not found in Firebase. App cannot start.");
+                        document.getElementById('maintenance-message-text').textContent = "Error: App configuration not found.";
+                        document.getElementById('maintenance-overlay').classList.add('active');
+                        return;
+                    }
+                    
+                    // Update earning config and verification screen text from Firebase
+                    if(config.earning) {
+                        earningConfig.shortenerUrl = config.earning.shortenerUrl || '#';
+                        earningConfig.youtubeVideoId = config.earning.youtubeVideoId || 'sO8eGL6SFsA';
+                        earningConfig.accessDurationHours = config.earning.accessDurationHours || 12;
+                        if (urlParams.get('verified') === 'true') {
+                             setCookie('accessGranted', 'true', earningConfig.accessDurationHours);
+                        }
+                    }
+                    updateVerificationScreenContent(config.verificationScreen);
+
+
+                    document.getElementById('splash-screen').style.opacity = '0';
+                    setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
+
+                    if (config.isOnline) {
+                        console.log("Site is Online. Showing app wrapper.");
+                        document.getElementById('maintenance-overlay').classList.remove('active');
+                        document.getElementById('app-wrapper').style.visibility = 'visible';
+                        if (localStorage.getItem('username')) {
+                            renderWebsiteContent(config);
+                        } else {
+                            openOverlay('namePrompt');
+                        }
+                    } else {
+                        console.warn("Site is Offline (set in Firebase config).");
+                        document.getElementById('maintenance-message-text').textContent = config.maintenanceMessage || "Website is Under Maintenance";
+                        document.getElementById('maintenance-overlay').classList.add('active');
+                        document.getElementById('app-wrapper').style.visibility = 'hidden';
+                    }
+                }, (error) => {
+                    console.error("Firebase Read Error (config):", error);
+                    document.getElementById('maintenance-message-text').textContent = "Could not connect to the server. Check your internet connection and Firebase rules.";
+                    document.getElementById('maintenance-overlay').classList.add('active');
+                });
+            }
+
+            function renderWebsiteContent(config) {
+                console.log("Rendering main content...");
+                if (config.popup?.showPopup) setupTelegramPopup(config.popup);
+                
+                console.log("Fetching categories and books...");
+                onValue(categoriesRef, (snapshot) => {
+                    const categories = snapshot.val();
+                    console.log("Firebase Categories Data Loaded:", categories);
+                    if (categories) {
+                        renderCategoriesAndBooks(categories);
+                    } else {
+                        console.error("IMPORTANT: 'skillneast/categories' not found or is empty in Firebase.");
+                        document.getElementById('book-grid').innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); margin-top: 2rem;">Could not load book categories. Please check database.</p>`;
+                    }
+                }, (error) => {
+                    console.error("Firebase Read Error (categories):", error);
+                    document.getElementById('book-grid').innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); margin-top: 2rem;">Error loading books. Check console and Firebase rules.</p>`;
+                });
+                
+                setupVerificationOverlay();
+            }
+            
+            // --- FIX START: Function to update verification screen content from Firebase ---
+            function updateVerificationScreenContent(vfsData) {
+                if (!vfsData) return; // Do nothing if data doesn't exist
+
+                const mainTitleEl = document.querySelector('.verification-main-title');
+                const card1TitleEl = document.querySelector('#generateKeyButton .title');
+                const card3TitleEl = document.querySelector('#videoTutorialCard .title');
+                const infoCardTitleEl = document.querySelector('.info-card .title');
+                const infoCardBodyEl = document.querySelector('.info-card-body');
+
+                if (mainTitleEl && vfsData.mainTitle) mainTitleEl.textContent = vfsData.mainTitle;
+                if (card1TitleEl && vfsData.card1Title) card1TitleEl.textContent = vfsData.card1Title;
+                if (card3TitleEl && vfsData.card3Title) card3TitleEl.textContent = vfsData.card3Title;
+                if (infoCardTitleEl && vfsData.infoCardTitle) infoCardTitleEl.textContent = vfsData.infoCardTitle;
+                if (infoCardBodyEl && vfsData.infoCardBody) infoCardBodyEl.innerHTML = vfsData.infoCardBody;
+            }
+            // --- FIX END ---
+
+
+            function setupTelegramPopup(popupConfig) {
+                const popupImage = document.getElementById('popupImage');
+                if(popupConfig.imageUrl) {
+                    popupImage.src = popupConfig.imageUrl;
+                    popupImage.style.display = 'block';
+                } else {
+                    popupImage.style.display = 'none';
+                }
+                document.getElementById('popupTitle').textContent = popupConfig.title || '';
+                document.getElementById('popupDescription').textContent = popupConfig.description || '';
+                const popupButton = document.getElementById('popupButton');
+                popupButton.innerHTML = `<span class="shine-effect"></span>${popupConfig.buttonText || ''}`;
+                popupButton.href = popupConfig.buttonLink || '#';
+                setTimeout(() => openOverlay('telegram'), 2500);
+            }
+            
+            function renderCategoriesAndBooks(categories) {
+                allBooksCache = [];
+                for (const catId in categories) {
+                    if (categories[catId] && categories[catId].books) {
+                        for (const bookId in categories[catId].books) {
+                            allBooksCache.push({ ...categories[catId].books[bookId], id: bookId, catId: catId });
+                        }
+                    }
+                }
+                console.log("Total books found:", allBooksCache.length);
+
+                if(allBooksCache.length === 0) {
+                     console.warn("Warning: No books found after checking all categories.");
+                     document.getElementById('book-grid').innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); margin-top: 2rem;">No books are available at the moment. Please check back later.</p>`;
+                     document.getElementById('popular-section').style.display = 'none';
+                }
+
+                const popularContainer = document.getElementById('popular-container');
+                const popularBooks = allBooksCache.filter(b => b.isPopular);
+                popularContainer.innerHTML = '';
+                document.getElementById('popular-section').style.display = popularBooks.length > 0 ? 'block' : 'none';
+                popularBooks.forEach((book, index) => { const card = createBookCard(book); card.style.animationDelay = `${index * 50}ms`; popularContainer.appendChild(card); });
+
+                const categoryFilters = document.getElementById('category-filters');
+                categoryFilters.innerHTML = '';
+                const filterAllBtn = document.createElement('button');
+                filterAllBtn.className = 'filter-btn active';
+                filterAllBtn.textContent = 'All';
+                filterAllBtn.onclick = () => filterBooks('All');
+                categoryFilters.appendChild(filterAllBtn);
+
+                Object.keys(categories).forEach(catId => {
+                    if (categories[catId] && categories[catId].name) {
+                        const btn = document.createElement('button');
+                        btn.className = 'filter-btn';
+                        btn.textContent = categories[catId].name;
+                        btn.dataset.catId = catId;
+                        btn.onclick = () => filterBooks(catId);
+                        categoryFilters.appendChild(btn);
+                    }
+                });
+                filterBooks('All');
+            }
+
+            function filterBooks(selectedCatId) {
+                document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                const activeBtn = selectedCatId === 'All' ? document.querySelector('#category-filters .filter-btn') : document.querySelector(`button[data-cat-id="${selectedCatId}"]`);
+                if(activeBtn) activeBtn.classList.add('active');
+
+                const bookGrid = document.getElementById('book-grid');
+                bookGrid.innerHTML = '';
+                const booksToRender = selectedCatId === 'All' ? allBooksCache : allBooksCache.filter(b => b.catId === selectedCatId);
+                
+                if (booksToRender.length === 0 && allBooksCache.length > 0) { 
+                     bookGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); margin-top: 2rem;">No books in this category yet.</p>`;
+                } else {
+                    booksToRender.forEach((book, index) => {
+                        const card = createBookCard(book);
+                        card.style.animationDelay = `${index * 50}ms`;
+                        bookGrid.appendChild(card);
+                    });
+                }
+            }
+
+            function createBookCard(book) {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `<div class="book-card-image" style="background-image: url('${book.coverUrl || ''}')"></div><h3 class="book-card-title">${book.title || 'Untitled Book'}</h3>`;
+                card.onclick = () => showBookDetails(book.catId, book.id);
+                return card;
+            }
+
+            function setupVerificationOverlay() {
+                const videoContainer = document.getElementById('videoContainer');
+                const videoTutorialCard = document.getElementById('videoTutorialCard');
+                
+                videoTutorialCard.addEventListener('click', () => {
+                    if (videoContainer.style.display === 'none') {
+                        videoContainer.style.display = 'block';
+                        if (!videoContainer.querySelector('iframe')) {
+                            const iframe = document.createElement('iframe');
+                            iframe.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%;';
+                            // --- FIX START: Correct YouTube embed URL and use template literal ---
+                            iframe.setAttribute('src', `https://www.youtube.com/embed/${earningConfig.youtubeVideoId}?autoplay=1&rel=0&modestbranding=1`);
+                            // --- FIX END ---
+                            iframe.setAttribute('frameborder', '0');
+                            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                            iframe.setAttribute('allowfullscreen', 'true');
+                            videoContainer.innerHTML = '';
+                            videoContainer.appendChild(iframe);
+                        }
+                    } else {
+                        videoContainer.style.display = 'none';
+                        videoContainer.innerHTML = ''; // Stop and remove video
+                    }
+                });
+                const generateBtn = document.getElementById('generateKeyButton');
+                generateBtn.href = earningConfig.shortenerUrl;
+                generateBtn.addEventListener('click', () => { setTimeout(() => { closeOverlay('verification'); }, 1000); });
+            }
+
+            document.getElementById('name-submit-btn').addEventListener('click', () => {
+                const name = document.getElementById('name-input').value.trim();
+                if (name) {
+                    localStorage.setItem('username', name);
+                    closeOverlay('namePrompt');
+                    onValue(configRef, (snap) => renderWebsiteContent(snap.val() || {}), { onlyOnce: true });
+                }
+            });
+
+            document.querySelectorAll('.overlay').forEach(overlay => {
+                const overlayId = overlay.id.replace('-popup', '').replace('-overlay', '');
+                overlay.querySelectorAll('.close-btn, .back-btn').forEach(btn => { 
+                    btn.addEventListener('click', (e) => { 
+                        e.stopPropagation(); 
+                        closeOverlay(overlayId);
+                    }); 
+                });
+            });
+
+            document.getElementById('search-icon').addEventListener('click', () => openOverlay('search'));
+            document.getElementById('notification-icon').addEventListener('click', () => openOverlay('notifications'));
+            document.querySelectorAll('.notification-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelector('.notification-tab.active').classList.remove('active'); document.querySelector('.notification-content.active').classList.remove('active'); tab.classList.add('active'); document.getElementById(tab.dataset.tab + '-content').classList.add('active'); }); });
+
+            let currentBookListener = null;
+            function showBookDetails(catId, bookId) {
+                const bookRef = ref(db, `skillneast/categories/${catId}/books/${bookId}`);
+                if(currentBookListener) currentBookListener();
+                currentBookListener = onValue(bookRef, (snap) => {
+                    const book = snap.val();
+                    if(!book) { closeOverlay('bookDetail'); return; }
+                    const detailPanel = overlays.bookDetail.querySelector('.panel');
+                    let likedBooks = JSON.parse(localStorage.getItem('liked_books')) || [];
+                    const isLiked = likedBooks.includes(bookId);
+                    detailPanel.innerHTML = `<button class="close-btn"><i class="fas fa-times"></i></button><img src="${book.coverUrl || ''}" alt="${book.title}" class="book-detail-header-img"><div class="book-detail-content"><h2 class="book-detail-main-title">${book.title}</h2><p class="book-detail-author">By ${book.author}</p><div class="book-detail-meta"><span><i class="fas fa-share-alt"></i> Shared by ${book.sharedBy || 'Admin'}</span></div><div class="book-detail-actions"><button id="likeBtn" class="btn-effect ${isLiked ? 'liked' : ''}"><i class="fa-heart ${isLiked ? 'fas' : 'far'}"></i><span id="like-count">${book.likes || 0}</span></button><a href="${book.downloadUrl}" id="bookDownloadBtn" class="red-btn btn-effect" style="flex-grow: 1;"><span class="shine-effect"></span>Download</a></div><h3 class="detail-section-title">Feedback & Comments</h3><div class="feedback-form"><textarea id="feedbackInput" placeholder="Share your thoughts..."></textarea><button id="submitFeedbackBtn" class="red-btn btn-effect"><span class="shine-effect"></span>Submit Feedback</button></div><div class="comments-container"></div></div>`;
+                    renderComments(detailPanel.querySelector('.comments-container'), book.comments || {}, catId, bookId);
+                    detailPanel.querySelector('.close-btn').onclick = () => { if(currentBookListener) currentBookListener(); closeOverlay('bookDetail'); };
+                    detailPanel.querySelector('#bookDownloadBtn').addEventListener('click', (e) => { e.preventDefault(); if (getCookie('accessGranted') === 'true') { window.open(book.downloadUrl, '_blank'); } else { openOverlay('verification'); } });
+                    detailPanel.querySelector('#likeBtn').onclick = () => { let currentLikedBooks = JSON.parse(localStorage.getItem('liked_books')) || []; const currentlyLiked = currentLikedBooks.includes(bookId); runTransaction(ref(db, `skillneast/categories/${catId}/books/${bookId}`), (currentData) => { if (currentData) { if (currentlyLiked) { currentData.likes = (currentData.likes || 1) - 1; } else { currentData.likes = (currentData.likes || 0) + 1; } } return currentData; }); if (currentlyLiked) { currentLikedBooks = currentLikedBooks.filter(id => id !== bookId); } else { currentLikedBooks.push(bookId); } localStorage.setItem('liked_books', JSON.stringify(currentLikedBooks)); };
+                    detailPanel.querySelector('#submitFeedbackBtn').onclick = () => { const feedbackInput = detailPanel.querySelector('#feedbackInput'); if(feedbackInput.value.trim()) { push(ref(db, `skillneast/categories/${catId}/books/${bookId}/comments`), { user: localStorage.getItem('username') || 'Guest', text: feedbackInput.value.trim(), timestamp: serverTimestamp(), likes: 0 }); feedbackInput.value = ''; } };
+                });
+                openOverlay('bookDetail');
+            }
+            
+            function renderComments(container, comments, catId, bookId) {
+                container.innerHTML = Object.keys(comments).length === 0 ? '<p class="text-muted">Be the first to leave feedback!</p>' : '';
+                let likedComments = JSON.parse(localStorage.getItem('liked_comments')) || {};
+                Object.entries(comments).reverse().forEach(([commentId, comment]) => { const commentEl = document.createElement('div'); commentEl.className = 'comment'; const isCommentLiked = likedComments[commentId] === true; const hasReplies = comment.replies && Object.keys(comment.replies).length > 0; let repliesHTML = ''; if (hasReplies) { repliesHTML += `<div class="comment-reply-container" style="display: none;">`; Object.values(comment.replies).forEach(reply => { repliesHTML += `<div class="comment"><div class="comment-header"><span class="comment-user">${reply.user}</span><span class="comment-timestamp">${formatTimestamp(reply.timestamp)}</span></div><p class="comment-body">${reply.text}</p></div>`; }); repliesHTML += `</div>`; }
+                commentEl.innerHTML = `<div class="comment-header"><span class="comment-user">${comment.user}</span><span class="comment-timestamp">${formatTimestamp(comment.timestamp)}</span></div><p class="comment-body">${comment.text}</p><div class="comment-actions"><button class="comment-like-btn ${isCommentLiked ? 'liked' : ''}"><i class="fas fa-heart"></i><span>${comment.likes || 0}</span></button><button class="comment-reply-btn"><i class="fas fa-reply"></i> Reply</button></div>${hasReplies ? `<button class="view-replies-btn">View ${Object.keys(comment.replies).length} replies</button>` : ''}${repliesHTML}<div class="reply-form" style="display: none;"><textarea placeholder="Write a reply..."></textarea><button class="red-btn">Reply</button></div>`;
+                container.appendChild(commentEl);
+                commentEl.querySelector('.comment-like-btn').addEventListener('click', () => handleCommentLike(catId, bookId, commentId));
+                const replyBtn = commentEl.querySelector('.comment-reply-btn'); const replyForm = commentEl.querySelector('.reply-form'); replyBtn.addEventListener('click', () => { replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none'; });
+                replyForm.querySelector('button').addEventListener('click', () => { const replyInput = replyForm.querySelector('textarea'); if(replyInput.value.trim()) { handleCommentReply(catId, bookId, commentId, replyInput.value.trim()); replyInput.value = ''; replyForm.style.display = 'none'; } });
+                const viewRepliesBtn = commentEl.querySelector('.view-replies-btn');
+                if(viewRepliesBtn) { viewRepliesBtn.addEventListener('click', () => { const replyContainer = commentEl.querySelector('.comment-reply-container'); const isHidden = replyContainer.style.display === 'none'; replyContainer.style.display = isHidden ? 'block' : 'none'; viewRepliesBtn.textContent = isHidden ? 'Hide replies' : `View ${Object.keys(comment.replies).length} replies`; }); } });
+            }
+
+            function handleCommentLike(catId, bookId, commentId) { let likedComments = JSON.parse(localStorage.getItem('liked_comments')) || {}; const isLiked = likedComments[commentId] === true; runTransaction(ref(db, `skillneast/categories/${catId}/books/${bookId}/comments/${commentId}/likes`), (currentLikes) => { if (isLiked) return (currentLikes || 1) - 1; return (currentLikes || 0) + 1; }); if (isLiked) { delete likedComments[commentId]; } else { likedComments[commentId] = true; } localStorage.setItem('liked_comments', JSON.stringify(likedComments)); }
+            function handleCommentReply(catId, bookId, commentId, text) { push(ref(db, `skillneast/categories/${catId}/books/${bookId}/comments/${commentId}/replies`), { user: localStorage.getItem('username') || 'Guest', text: text, timestamp: serverTimestamp() }); }
+            function formatTimestamp(ts) { if (!ts) return ''; const date = new Date(ts); return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ', ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+            
+            startApp();
+        });
+    </script>
+</body>
+</html>
